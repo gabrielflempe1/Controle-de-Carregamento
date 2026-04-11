@@ -1,0 +1,5 @@
+{
+  "name": "Controle de Carregamento",
+  "description": "Sistema de acompanhamento operacional de expedição com integração de tickets e ordens de frete SAP.",
+  "requestFramePermissions": []
+}
