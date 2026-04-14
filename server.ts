@@ -28,6 +28,29 @@ app.post("/api/tickets", async (req, res) => {
   const data = JSON.parse(await fs.readFile(DATA_FILE, "utf-8"));
   const incoming = req.body;
   
+  const parseIncomingWeight = (val: any) => {
+    if (typeof val === 'number') return val;
+    const s = String(val || "0").trim();
+    if (!s) return 0;
+    
+    const hasComma = s.includes(',');
+    const hasDot = s.includes('.');
+    
+    if (hasComma && hasDot) {
+      if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+        return parseFloat(s.replace(/\./g, '').replace(',', '.'));
+      } else {
+        return parseFloat(s.replace(/,/g, ''));
+      }
+    }
+    
+    if (hasComma) {
+      return parseFloat(s.replace(',', '.'));
+    }
+    
+    return parseFloat(s);
+  };
+
   // Se tiver OF, tentamos encontrar um existente para agrupar
   if (incoming.ofNumber) {
     const incomingOf = String(incoming.ofNumber).trim();
@@ -41,20 +64,14 @@ app.post("/api/tickets", async (req, res) => {
       const incomingCities = incoming.cidade ? String(incoming.cidade).split(", ").map((c: string) => c.trim()) : [];
       const allCities = Array.from(new Set([...existingCities, ...incomingCities])).filter(Boolean);
       
-      // Somar pesos (agora como números)
-      const parseIncomingWeight = (w: any) => {
-        if (typeof w === 'number') return w;
-        return parseFloat(String(w || "0").replace(/\./g, '').replace(',', '.')) || 0;
-      };
-      const totalWeight = (Number(existing.pesoRemessa) || 0) + parseIncomingWeight(incoming.pesoRemessa);
-      
+      // Atualizar campos (exceto etapa e ID)
       data.tickets[existingIndex] = {
         ...existing,
         ...incoming, // Sobrescreve com os dados mais recentes
         id: existing.id, // Mantém o ID original
         etapa: existing.etapa, // Preserva a etapa atual do processo
         cidade: allCities.join(", "),
-        pesoRemessa: totalWeight,
+        pesoRemessa: parseIncomingWeight(incoming.pesoRemessa), // Substitui o peso pelo mais recente (já agrupado no front)
         ticketNumber: incoming.ticketNumber || existing.ticketNumber // Mantém o ticket se o novo for vazio
       };
       

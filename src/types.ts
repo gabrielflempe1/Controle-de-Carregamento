@@ -6,6 +6,7 @@ export interface Movimentacao {
   responsaveis: string;
   dataHora: string;
   turno: string;
+  comentario?: string;
 }
 
 export interface Ticket {
@@ -35,10 +36,11 @@ export interface Ticket {
   contrato?: string;
   createdAt: string;
   historico?: Movimentacao[];
+  comentario?: string;
 }
 
 export const ETAPAS = [
-  { id: "contratacao", label: "Contratação" },
+  { id: "contratacao", label: "Planejamento" },
   { id: "separar", label: "A Separar" },
   { id: "separada", label: "Separada" },
   { id: "carregar", label: "A Carregar" },
